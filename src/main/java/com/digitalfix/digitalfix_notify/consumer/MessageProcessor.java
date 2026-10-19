@@ -27,15 +27,6 @@ public class MessageProcessor {
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
             try {
                 operation.accept(message);
-
-                channel.basicAck(deliveryTag, false);
-
-                log.info(
-                        "ACK enviado. Cola={}, intento={}",
-                        queue, attempt
-                );
-                return;
-
             } catch (Exception ex) {
                 log.error(
                         "Error en cola={}, intento={}/{}: {}",
@@ -74,7 +65,15 @@ public class MessageProcessor {
                     );
                     return;
                 }
+
+                continue;
             }
+
+            //Solo ejecuta si el procedimiento fue exitoso
+            channel.basicAck(deliveryTag, false);
+
+            log.info("ACK enviado. Cola={}, intento={}", queue, attempt);
+            return;
         }
     }
 
